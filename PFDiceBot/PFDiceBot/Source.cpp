@@ -129,6 +129,19 @@ string CalRoll(string str) {
 	return result;
 }
 
+vector<string> getSplit(const char *msg) {
+	char *msgc = new char[strlen(msg)];
+	strcpy(msgc, msg + 1);
+	vector<string> resultVec;
+	char* context;
+	char* tmpStr = strtok_s(msgc, " ", &context);
+	while (tmpStr != NULL) {
+		resultVec.push_back(string(tmpStr));
+		tmpStr = strtok_s(NULL, " ", &context);
+	}
+	delete[] msgc;
+	return resultVec;
+}
 
 /*
 * Type=21 私聊消息
@@ -140,23 +153,12 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 	//如果不回复消息，交由之后的应用/过滤器处理，这里 return EVENT_IGNORE - 忽略本条消息
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			char *msgc = new char[strlen(msg)];
-			strcpy(msgc, msg+1);
-			vector<string> resultVec;
-			char* context;
-			char* tmpStr = strtok_s(msgc, " ", &context);
-			while (tmpStr != NULL) {
-				resultVec.push_back(string(tmpStr));
-				tmpStr = strtok_s(NULL, " ", &context);
-			}
-			delete [] msgc;
-			if (resultVec.size() > 1) {
-				if (resultVec[0] == "r") {
-					string res = CalRoll(resultVec[1]);
-					CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
-				} else if (resultVec[0] == "help") {
-					CQ_sendPrivateMsg(ac, fromQQ, HELP);
-				}
+			vector<string> resultVec = getSplit(msg);
+			if (resultVec[0] == "r") {
+				string res = CalRoll(resultVec[1]);
+				CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
+			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
+				CQ_sendPrivateMsg(ac, fromQQ, HELP);
 			}
 		}
 	}
@@ -170,23 +172,12 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fromGroup, int64_t fromQQ, const char *fromAnonymous, const char *msg, int32_t font) {
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			char *msgc = new char[strlen(msg)];
-			strcpy(msgc, msg + 1);
-			vector<string> resultVec;
-			char* context;
-			char* tmpStr = strtok_s(msgc, " ", &context);
-			while (tmpStr != NULL) {
-				resultVec.push_back(string(tmpStr));
-				tmpStr = strtok_s(NULL, " ", &context);
-			}
-			delete[] msgc;
-			if (resultVec.size() > 1) {
-				if (resultVec[0] == "r") {
-					string res = CalRoll(resultVec[1]);
-					CQ_sendGroupMsg(ac, fromGroup, res.c_str());
-				} else if (resultVec[0] == "help") {
-					CQ_sendGroupMsg(ac, fromGroup, HELP);
-				}
+			vector<string> resultVec = getSplit(msg);
+			if (resultVec[0] == "r") {
+				string res = CalRoll(resultVec[1]);
+				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
+			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
+				CQ_sendGroupMsg(ac, fromGroup, HELP);
 			}
 		}
 	}
@@ -200,23 +191,12 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t fromDiscuss, int64_t fromQQ, const char *msg, int32_t font) {
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			char *msgc = new char[strlen(msg)];
-			strcpy(msgc, msg + 1);
-			vector<string> resultVec;
-			char* context;
-			char* tmpStr = strtok_s(msgc, " ", &context);
-			while (tmpStr != NULL) {
-				resultVec.push_back(string(tmpStr));
-				tmpStr = strtok_s(NULL, " ", &context);
-			}
-			delete[] msgc;
-			if (resultVec.size() > 1) {
-				if (resultVec[0] == "r") {
-					string res = CalRoll(resultVec[1]);
-					CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
-				} else if (resultVec[0] == "help") {
-					CQ_sendDiscussMsg(ac, fromDiscuss, HELP);
-				}
+			vector<string> resultVec = getSplit(msg);
+			if (resultVec[0] == "r") {
+				string res = CalRoll(resultVec[1]);
+				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
+			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
+				CQ_sendDiscussMsg(ac, fromDiscuss, HELP);
 			}
 		}
 	}

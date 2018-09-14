@@ -226,7 +226,14 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 		if (strlen(msg) > 1) {
 			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
-				string res = CalExp(resultVec[1]);
+				string at;
+				at.append("[CQ:at,qq=");
+				char * qq = new char[32];
+				sprintf(qq, "%lld", fromQQ);
+				at.append(qq);
+				delete qq;
+				at.append("]");
+				string res = at + CalExp(resultVec[1]);
 				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendGroupMsg(ac, fromGroup, HELP);
@@ -245,7 +252,14 @@ CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t 
 		if (strlen(msg) > 1) {
 			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
-				string res = CalExp(resultVec[1]);
+				string at;
+				at.append("[CQ:at,qq=");
+				char * qq = new char[32];
+				sprintf(qq, "%lld", fromQQ);
+				at.append(qq);
+				delete qq;
+				at.append("]");
+				string res = at + CalExp(resultVec[1]);
 				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendDiscussMsg(ac, fromDiscuss, HELP);

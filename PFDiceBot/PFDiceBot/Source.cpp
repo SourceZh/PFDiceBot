@@ -20,6 +20,8 @@ using namespace std;
 int ac = -1; //AuthCode 调用酷Q的方法时需要用到
 bool enabled = false;
 
+std::default_random_engine generator;
+
 char HELP[]= ".r {表达式}\n 例如：.r 3d6";
 
 /*
@@ -39,6 +41,11 @@ CQEVENT(int32_t, Initialize, 4)(int32_t AuthCode) {
 	return 0;
 }
 
+template<typename T> string toString(const T& t) {
+	ostringstream oss;  //创建一个格式化输出流
+	oss << t;             //把值传递如流中
+	return oss.str();
+}
 
 /*
 * Type=1001 酷Q启动
@@ -46,7 +53,7 @@ CQEVENT(int32_t, Initialize, 4)(int32_t AuthCode) {
 * 如非必要，不建议在这里加载窗口。（可以添加菜单，让用户手动打开窗口）
 */
 CQEVENT(int32_t, __eventStartup, 0)() {
-	srand((unsigned)time(NULL));
+	generator.seed((unsigned)time(NULL));
 	return 0;
 }
 
@@ -69,6 +76,7 @@ CQEVENT(int32_t, __eventExit, 0)() {
 */
 CQEVENT(int32_t, __eventEnable, 0)() {
 	enabled = true;
+	generator.seed((unsigned)time(NULL));
 	return 0;
 }
 
@@ -84,12 +92,6 @@ CQEVENT(int32_t, __eventDisable, 0)() {
 	return 0;
 }
 
-template<typename T> string toString(const T& t) {
-	ostringstream oss;  //创建一个格式化输出流
-	oss << t;             //把值传递如流中
-	return oss.str();
-}
-
 int toInt(const string &str) {
 	stringstream ss(str);
 	int n;
@@ -98,11 +100,11 @@ int toInt(const string &str) {
 }
 
 int myrandom(int max) {
-	return max-(1 + rand() % max)+1;
+	std::uniform_int_distribution<int> distribution(1, max);
+	return distribution(generator);
 }
 
 vector<string> getSplit(const char *msg, const char * deli) {
-	CQ_addLog(ac, CQLOG_DEBUG, "split_msg", msg);
 	char *msgc = new char[strlen(msg)];
 	strcpy(msgc, msg + 1);
 	vector<string> resultVec;

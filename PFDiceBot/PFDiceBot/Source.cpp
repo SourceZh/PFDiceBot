@@ -22,7 +22,7 @@ bool enabled = false;
 
 std::default_random_engine generator;
 
-char HELP[]= ".r {表达式}\n 例如：.r 3d6-1";
+char HELP[]= ".r {表达式}\n例如：.r 3d6+d8-1";
 
 /*
 * 返回应用的ApiVer、Appid，打包后将不会调用
@@ -120,15 +120,17 @@ vector<string> getSplit(const char *msg, const char * deli) {
 
 /*
 * CalRoll 计算骰子
-* str 格式：ndm+b
+* str 格式：ndm || m
 */
-string CalRoll(string str) {
+int CalRoll(string str, string &result) {
+	result += "(";
 	size_t pos = str.find("d");
-	size_t plpos = str.find("+");
-	size_t mupos = str.find("-");
-	if (pos == str.npos) return "";
-	int n = 0, m = 0, num = 0;
-	string result = "";
+	if (pos == str.npos) {
+		result += str;
+		result += ")";
+		return toInt(str);
+	}
+	int n = 0, m = 0;
 	stringstream calexp(str);
 	char op;
 	if (pos == 0) {
@@ -136,37 +138,60 @@ string CalRoll(string str) {
 	} else {
 		calexp >> n;
 	}
-	if (!(calexp >> op)) return "";
-	if (op != 'd') return "";
+	calexp >> op;
 	calexp >> m;
-	if (plpos != str.npos || mupos != str.npos){
-		if(!(calexp >> op)) return "";
-		calexp >> num;
-	}
-	int temp = n;
-	if (temp != 0 && m != 0) {
-		int cal = 0;
+	int cal = 0;
+	if (n != 0 && m != 0) {
 		int dice = myrandom(m);
 		cal += dice;
 		result += toString(dice);
-		temp--;
-		while (temp--) {
+		n--;
+		while (n--) {
 			dice = myrandom(m);
 			cal += dice;
 			result += " + " + toString(dice);
 		}
-		if (op == '-') {
-			cal -= num;
-			result += " - " + toString(num);
-		}
-		if (op == '+') {
-			cal += num;
-			result += " + " + toString(num);
-		}
-		if (op != 'd' || n != 1) {
-			result += " = " + toString(cal);
+	}
+	result += ")";
+	return cal;
+}
+
+string CalExp(string str) {
+	string result = "";
+	int cal = 0;
+	int start = 0, end = 0;
+	bool isfirst = true;
+	char op = 'd';
+	for (int i = 0; i < str.length(); ++i) {
+		if (str[i] == '+' || str[i] == '-') {
+			if (isfirst) {
+				cal = CalRoll(str.substr(0, i), result);
+				result += " " + toString(str[i]) + " ";
+				op = str[i];
+				start = i + 1;
+				isfirst = false;
+				continue;
+			}
+			end = i;
+			int temp = CalRoll(str.substr(start, end), result);
+			result += " " + toString(str[i]) + " ";
+			if (op == '+') cal += temp;
+			if (op == '-') cal -= temp;
+			op = str[i];
+			start = end + 1;
 		}
 	}
+	if (op == 'd') {
+		cal = CalRoll(str, result);
+		if (result.find("+") == result.npos) {
+			return result;
+		}
+	} else {
+		int temp = CalRoll(str.substr(start, str.length()), result);
+		if (op == '+') cal += temp;
+		if (op == '-') cal -= temp;
+	}
+	result += " = " + toString(cal);
 	return result;
 }
 
@@ -182,7 +207,7 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 		if (strlen(msg) > 1) {
 			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
-				string res = CalRoll(resultVec[1]);
+				string res = CalExp(resultVec[1]);
 				CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendPrivateMsg(ac, fromQQ, HELP);
@@ -201,7 +226,7 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 		if (strlen(msg) > 1) {
 			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
-				string res = CalRoll(resultVec[1]);
+				string res = CalExp(resultVec[1]);
 				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendGroupMsg(ac, fromGroup, HELP);
@@ -220,7 +245,7 @@ CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t 
 		if (strlen(msg) > 1) {
 			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
-				string res = CalRoll(resultVec[1]);
+				string res = CalExp(resultVec[1]);
 				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendDiscussMsg(ac, fromDiscuss, HELP);

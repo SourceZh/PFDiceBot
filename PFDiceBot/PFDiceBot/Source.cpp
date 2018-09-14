@@ -20,8 +20,7 @@ using namespace std;
 int ac = -1; //AuthCode 调用酷Q的方法时需要用到
 bool enabled = false;
 
-std::random_device rd; //随机
-std::mt19937 e(rd()); //随机方法
+char HELP[]= ".r {表达式}\n 例如：.r 3d6";
 
 /*
 * 返回应用的ApiVer、Appid，打包后将不会调用
@@ -109,7 +108,7 @@ int myrandom(int max) {
 string CalRoll(string str) {
 	size_t pos = str.find("d");
 	string result = "";
-	if (isalnum(str[0])) {
+	if (str[0] > '0' && str[0] < '9') {
 		int n = toInt(str.substr(0, pos).c_str());
 		int m = toInt(str.substr(pos + 1, str.size()).c_str());
 		int cal = 0;
@@ -155,6 +154,8 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 				if (resultVec[0] == "r") {
 					string res = CalRoll(resultVec[1]);
 					CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
+				} else if (resultVec[0] == "help") {
+					CQ_sendPrivateMsg(ac, fromQQ, HELP);
 				}
 			}
 		}
@@ -183,6 +184,8 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 				if (resultVec[0] == "r") {
 					string res = CalRoll(resultVec[1]);
 					CQ_sendGroupMsg(ac, fromGroup, res.c_str());
+				} else if (resultVec[0] == "help") {
+					CQ_sendGroupMsg(ac, fromGroup, HELP);
 				}
 			}
 		}
@@ -210,7 +213,9 @@ CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t 
 			if (resultVec.size() > 1) {
 				if (resultVec[0] == "r") {
 					string res = CalRoll(resultVec[1]);
-					CQ_sendGroupMsg(ac, fromDiscuss, res.c_str());
+					CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
+				} else if (resultVec[0] == "help") {
+					CQ_sendDiscussMsg(ac, fromDiscuss, HELP);
 				}
 			}
 		}

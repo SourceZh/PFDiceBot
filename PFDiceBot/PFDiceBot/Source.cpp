@@ -22,7 +22,7 @@ bool enabled = false;
 
 std::default_random_engine generator;
 
-char HELP[]= ".r {表达式}\n 例如：.r 3d6";
+char HELP[]= ".r {表达式}\n 例如：.r 3d6-1";
 
 /*
 * 返回应用的ApiVer、Appid，打包后将不会调用
@@ -120,12 +120,14 @@ vector<string> getSplit(const char *msg, const char * deli) {
 
 /*
 * CalRoll 计算骰子
-* str 格式：ndm
+* str 格式：ndm+b
 */
 string CalRoll(string str) {
 	size_t pos = str.find("d");
+	size_t plpos = str.find("+");
+	size_t mupos = str.find("-");
 	if (pos == str.npos) return "";
-	int n = 0, m = 0;
+	int n = 0, m = 0, num = 0;
 	string result = "";
 	stringstream calexp(str);
 	char op;
@@ -137,19 +139,31 @@ string CalRoll(string str) {
 	if (!(calexp >> op)) return "";
 	if (op != 'd') return "";
 	calexp >> m;
+	if (plpos != str.npos || mupos != str.npos){
+		if(!(calexp >> op)) return "";
+		calexp >> num;
+	}
 	int temp = n;
 	if (temp != 0 && m != 0) {
 		int cal = 0;
 		int dice = myrandom(m);
 		cal += dice;
 		result += toString(dice);
-		n--;
-		while (n--) {
+		temp--;
+		while (temp--) {
 			dice = myrandom(m);
 			cal += dice;
 			result += " + " + toString(dice);
 		}
-		if (n != 1) {
+		if (op == '-') {
+			cal -= num;
+			result += " - " + toString(num);
+		}
+		if (op == '+') {
+			cal += num;
+			result += " + " + toString(num);
+		}
+		if (op != 'd' || n != 1) {
 			result += " = " + toString(cal);
 		}
 	}

@@ -101,16 +101,42 @@ int myrandom(int max) {
 	return max-(1 + rand() % max)+1;
 }
 
+vector<string> getSplit(const char *msg, const char * deli) {
+	CQ_addLog(ac, CQLOG_DEBUG, "split_msg", msg);
+	char *msgc = new char[strlen(msg)];
+	strcpy(msgc, msg + 1);
+	vector<string> resultVec;
+	char* context;
+	char* tmpStr = strtok_s(msgc, deli, &context);
+	while (tmpStr != NULL) {
+		resultVec.push_back(string(tmpStr));
+		tmpStr = strtok_s(NULL, deli, &context);
+	}
+	delete[] msgc;
+	return resultVec;
+}
+
 /*
 * CalRoll 计算骰子
 * str 格式：ndm
 */
 string CalRoll(string str) {
 	size_t pos = str.find("d");
+	if (pos == str.npos) return "";
+	int n = 0, m = 0;
 	string result = "";
-	if (str[0] > '0' && str[0] < '9') {
-		int n = toInt(str.substr(0, pos).c_str());
-		int m = toInt(str.substr(pos + 1, str.size()).c_str());
+	stringstream calexp(str);
+	char op;
+	if (pos == 0) {
+		n = 1;
+	} else {
+		calexp >> n;
+	}
+	if (!(calexp >> op)) return "";
+	if (op != 'd') return "";
+	calexp >> m;
+	int temp = n;
+	if (temp != 0 && m != 0) {
 		int cal = 0;
 		int dice = myrandom(m);
 		cal += dice;
@@ -121,26 +147,11 @@ string CalRoll(string str) {
 			cal += dice;
 			result += " + " + toString(dice);
 		}
-		result += " = " + toString(cal);
-	}
-	if (str[0] == 'd') {
-		result += str.substr(1, str.size());
+		if (n != 1) {
+			result += " = " + toString(cal);
+		}
 	}
 	return result;
-}
-
-vector<string> getSplit(const char *msg) {
-	char *msgc = new char[strlen(msg)];
-	strcpy(msgc, msg + 1);
-	vector<string> resultVec;
-	char* context;
-	char* tmpStr = strtok_s(msgc, " ", &context);
-	while (tmpStr != NULL) {
-		resultVec.push_back(string(tmpStr));
-		tmpStr = strtok_s(NULL, " ", &context);
-	}
-	delete[] msgc;
-	return resultVec;
 }
 
 /*
@@ -153,7 +164,7 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 	//如果不回复消息，交由之后的应用/过滤器处理，这里 return EVENT_IGNORE - 忽略本条消息
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			vector<string> resultVec = getSplit(msg);
+			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
 				string res = CalRoll(resultVec[1]);
 				CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
@@ -172,7 +183,7 @@ CQEVENT(int32_t, __eventPrivateMsg, 24)(int32_t subType, int32_t msgId, int64_t 
 CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fromGroup, int64_t fromQQ, const char *fromAnonymous, const char *msg, int32_t font) {
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			vector<string> resultVec = getSplit(msg);
+			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
 				string res = CalRoll(resultVec[1]);
 				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
@@ -191,7 +202,7 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t fromDiscuss, int64_t fromQQ, const char *msg, int32_t font) {
 	if (msg[0] == '.') {
 		if (strlen(msg) > 1) {
-			vector<string> resultVec = getSplit(msg);
+			vector<string> resultVec = getSplit(msg, " ");
 			if (resultVec[0] == "r") {
 				string res = CalRoll(resultVec[1]);
 				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());

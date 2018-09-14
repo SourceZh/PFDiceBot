@@ -173,7 +173,7 @@ string CalExp(string str) {
 				continue;
 			}
 			end = i;
-			int temp = CalRoll(str.substr(start, end), result);
+			int temp = CalRoll(str.substr(start, end-start), result);
 			result += " " + toString(str[i]) + " ";
 			if (op == '+') cal += temp;
 			if (op == '-') cal -= temp;
@@ -187,7 +187,7 @@ string CalExp(string str) {
 			return result;
 		}
 	} else {
-		int temp = CalRoll(str.substr(start, str.length()), result);
+		int temp = CalRoll(str.substr(start, str.length()-start), result);
 		if (op == '+') cal += temp;
 		if (op == '-') cal -= temp;
 	}

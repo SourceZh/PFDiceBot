@@ -22,7 +22,7 @@ bool enabled = false;
 
 std::default_random_engine generator;
 
-char HELP[]= ".r {表达式}\n例如：.r 3d6+d8-1";
+char HELP[]= "投骰子：.r {表达式}\n例如：.r 3d6+d8-1\n暗骰：.d {表达式}\n例如：.d 3d6+d8-1";
 
 /*
 * 返回应用的ApiVer、Appid，打包后将不会调用

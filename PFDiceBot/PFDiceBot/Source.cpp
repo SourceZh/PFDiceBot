@@ -237,6 +237,19 @@ CQEVENT(int32_t, __eventGroupMsg, 36)(int32_t subType, int32_t msgId, int64_t fr
 				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendGroupMsg(ac, fromGroup, HELP);
+			} else if (resultVec[0] == "d") {
+				string res = CalExp(resultVec[1]);
+				CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
+				string at;
+				at.append("[CQ:at,qq=");
+				char * qq = new char[32];
+				sprintf(qq, "%lld", fromQQ);
+				at.append(qq);
+				delete qq;
+				at.append("]");
+				res = at;
+				res.append("进行了暗骰");
+				CQ_sendGroupMsg(ac, fromGroup, res.c_str());
 			}
 		}
 	}
@@ -263,6 +276,19 @@ CQEVENT(int32_t, __eventDiscussMsg, 32)(int32_t subType, int32_t msgId, int64_t 
 				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
 			} else if (resultVec[0] == "help" || resultVec[0] == "h") {
 				CQ_sendDiscussMsg(ac, fromDiscuss, HELP);
+			} else if (resultVec[0] == "d") {
+				string res = CalExp(resultVec[1]);
+				CQ_sendPrivateMsg(ac, fromQQ, res.c_str());
+				string at;
+				at.append("[CQ:at,qq=");
+				char * qq = new char[32];
+				sprintf(qq, "%lld", fromQQ);
+				at.append(qq);
+				delete qq;
+				at.append("]");
+				res = at;
+				res.append("进行了暗骰");
+				CQ_sendDiscussMsg(ac, fromDiscuss, res.c_str());
 			}
 		}
 	}
